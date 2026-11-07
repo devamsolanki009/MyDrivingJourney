@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+/*__BASE_CSS__*/
+.hero {
+  position: relative; overflow: hidden; border-radius: 22px; height: 462px; color: #fff;
+  background: linear-gradient(125deg, #0A5A41 0%, #0B6E4F 30%, #145C5A 60%, #1F4E79 100%);
+  background-size: 220% 220%; animation: drift 16s ease-in-out infinite;
+}
+@keyframes drift { 0%,100% { background-position: 0% 40%; } 50% { background-position: 100% 60%; } }
+
+/* soft floating blobs */
+.blob { position: absolute; border-radius: 50%; filter: blur(40px); opacity: .35; animation: float 12s ease-in-out infinite; }
+.b1 { width: 320px; height: 320px; background: #2EC4B6; top: -120px; right: 8%; }
+.b2 { width: 260px; height: 260px; background: #F4A259; top: 40px; right: -80px; animation-delay: -4s; opacity: .22; }
+.b3 { width: 220px; height: 220px; background: #9EE0C6; top: 120px; left: -90px; animation-delay: -8s; opacity: .2; }
+@keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-20px, 24px) scale(1.08); } }
+
+.content { position: relative; z-index: 3; padding: 26px 30px 0; }
+.tag {
+  display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px; padding: 4px 12px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700;
+  backdrop-filter: blur(6px); opacity: 0; animation: rise .6s .05s ease forwards;
+}
+.tag .dot { width: 8px; height: 8px; border-radius: 50%; background: #7CF0C0; box-shadow: 0 0 0 0 rgba(124,240,192,.7); animation: pulse 1.8s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(124,240,192,.7); } 70% { box-shadow: 0 0 0 10px rgba(124,240,192,0); } 100% { box-shadow: 0 0 0 0 rgba(124,240,192,0); } }
+h1 { font-size: clamp(24px, 3.6vw, 38px); line-height: 1.08; letter-spacing: -0.035em; margin: 12px 0 8px; font-weight: 800; max-width: 780px; opacity: 0; animation: rise .7s .12s ease forwards; }
+h1 .accent { background: linear-gradient(90deg, #9EE0C6, #F4D58D); -webkit-background-clip: text; background-clip: text; color: transparent; }
+p.sub { margin: 0; max-width: 680px; color: #DDF0E8; font-size: 15.5px; line-height: 1.5; opacity: 0; animation: rise .7s .2s ease forwards; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 20px; max-width: 980px; }
+.stat {
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 16px; padding: 12px 14px;
+  backdrop-filter: blur(8px); opacity: 0; transform: translateY(16px); animation: rise .6s ease forwards;
+  transition: transform .25s ease, background .25s ease;
+}
+.stat:hover { transform: translateY(-4px); background: rgba(255,255,255,.18); }
+.stat .label { font-size: 12px; color: #CBE7DC; font-weight: 600; }
+.stat .value { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px; white-space: nowrap; }
+.stat .value small { font-size: 14px; font-weight: 600; color: #CBE7DC; margin-left: 3px; }
+.stat .note { font-size: 12px; margin-top: 2px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.note.up { color: #FFB4A2; } .note.down { color: #9EF0C9; } .note.neutral { color: #CBE7DC; }
+
+/* road scene */
+.scene { position: absolute; left: 0; right: 0; bottom: 0; height: 96px; z-index: 2; }
+.road { position: absolute; left: 0; right: 0; bottom: 0; height: 58px; background: linear-gradient(180deg, #2B3440, #232B35); }
+.road::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: #9AA3AB; opacity: .5; }
+.lanes { position: absolute; left: 0; right: 0; top: 27px; height: 4px;
+  background: repeating-linear-gradient(90deg, #F4D58D 0 38px, transparent 38px 76px); animation: lanes .9s linear infinite; }
+@keyframes lanes { from { background-position: 0 0; } to { background-position: -76px 0; } }
+.car { position: absolute; bottom: 30px; left: -140px; width: 120px; animation: drive 9s cubic-bezier(.45,.05,.55,.95) infinite; }
+.car .body { animation: bounce .45s ease-in-out infinite alternate; }
+@keyframes drive { 0% { left: -140px; } 45% { left: calc(50% - 60px); } 60% { left: calc(50% - 60px); } 100% { left: calc(100% + 20px); } }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-1.5px); } }
+.wheel { transform-box: fill-box; transform-origin: center; animation: spin .5s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.trees { position: absolute; bottom: 58px; left: 0; right: 0; height: 40px; opacity: .35;
+  background: radial-gradient(circle at 20px 30px, #0E3B33 16px, transparent 17px) 0 0 / 90px 40px repeat-x;
+  animation: lanes 6s linear infinite; }
+.light { position: absolute; right: 7%; bottom: 58px; width: 18px; height: 52px; background: #1A2028; border-radius: 6px; padding: 4px 3px; display: flex; flex-direction: column; gap: 3px; }
+.light i { display: block; width: 12px; height: 12px; border-radius: 50%; background: #3a434d; }
+.light i.r { animation: red 9s infinite; } .light i.a { animation: amber 9s infinite; } .light i.g { animation: green 9s infinite; }
+@keyframes red { 0%,40% { background: #3a434d; } 45%,60% { background: #FF5A5A; box-shadow: 0 0 10px #FF5A5A; } 61%,100% { background: #3a434d; } }
+@keyframes amber { 0%,36% { background: #3a434d; } 37%,44% { background: #FFC24A; box-shadow: 0 0 10px #FFC24A; } 45%,100% { background: #3a434d; } }
+@keyframes green { 0%,36% { background: #4BE38A; box-shadow: 0 0 10px #4BE38A; } 37%,60% { background: #3a434d; box-shadow: none; } 61%,100% { background: #4BE38A; box-shadow: 0 0 10px #4BE38A; } }
+.foot { position: absolute; right: 16px; top: 14px; z-index: 3; font-size: 11px; color: #CBE7DC; opacity: .85; }
+@media (prefers-reduced-motion: reduce) { .tag, h1, p.sub, .stat { opacity: 1 !important; transform: none !important; } .car { left: 40% !important; } }
+@media (max-width: 640px) { .content { padding: 20px 18px 0; } .stat .value { font-size: 22px; } .foot { display: none; } }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="foot" id="foot"></div>
+  <div class="content">
+    <span class="tag"><span class="dot"></span><span id="tag"></span></span>
+    <h1 id="title"></h1>
+    <p class="sub" id="sub"></p>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="scene" aria-hidden="true">
+    <div class="trees"></div>
+    <div class="light"><i class="r"></i><i class="a"></i><i class="g"></i></div>
+    <div class="road"><div class="lanes"></div></div>
+    <div class="car">
+      <svg class="body" viewBox="0 0 120 50" width="120" height="50">
+        <path d="M8 34 Q8 24 20 22 L38 20 Q48 8 66 8 L80 8 Q92 9 100 20 L110 22 Q116 24 116 32 L116 36 L8 36 Z" fill="#F4F1EA"/>
+        <path d="M44 20 Q52 11 64 11 L72 11 L72 20 Z" fill="#8FC9E8"/>
+        <path d="M76 11 L80 11 Q90 12 96 20 L76 20 Z" fill="#8FC9E8"/>
+        <rect x="8" y="27" width="108" height="3" fill="#0B6E4F"/>
+        <rect x="104" y="24" width="10" height="5" rx="2" fill="#FFE9A8"/>
+        <rect x="10" y="24" width="7" height="5" rx="2" fill="#FF6B6B"/>
+        <rect x="22" y="14" width="16" height="10" rx="2" fill="#fff" stroke="#D64545" stroke-width="1.5"/>
+        <text x="30" y="22" text-anchor="middle" font-size="8" font-weight="800" fill="#D64545" font-family="Inter, sans-serif">L</text>
+        <g class="wheel"><circle cx="32" cy="38" r="9" fill="#1A2028"/><circle cx="32" cy="38" r="4" fill="#9AA3AB"/><rect x="31" y="30" width="2" height="16" fill="#5C6770"/></g>
+        <g class="wheel"><circle cx="92" cy="38" r="9" fill="#1A2028"/><circle cx="92" cy="38" r="4" fill="#9AA3AB"/><rect x="91" y="30" width="2" height="16" fill="#5C6770"/></g>
+      </svg>
+    </div>
+  </div>
+</div>
+<script>
+const DATA = __DATA__;
+document.getElementById("tag").textContent = DATA.tag;
+// Title: last two words get the gradient accent.
+const words = DATA.title.split(" ");
+const accent = words.splice(-2).join(" ");
+document.getElementById("title").innerHTML = "";
+const t = document.getElementById("title");
+t.append(document.createTextNode(words.join(" ") + " "));
+const span = document.createElement("span"); span.className = "accent"; span.textContent = accent; t.append(span);
+document.getElementById("sub").textContent = DATA.subtitle;
+document.getElementById("foot").textContent = DATA.footnote || "";
+
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const statsEl = document.getElementById("stats");
+DATA.stats.forEach((s, i) => {
+  const el = document.createElement("div");
+  el.className = "stat"; el.style.animationDelay = (0.3 + i * 0.1) + "s";
+  const arrow = s.tone === "up" ? "▲" : s.tone === "down" ? "▼" : "•";
+  el.innerHTML = `<div class="label"></div><div class="value"><span class="num">—</span><small></small></div>
+                  <div class="note ${s.tone || "neutral"}"><span>${s.note ? arrow : ""}</span><span class="nt"></span></div>`;
+  el.querySelector(".label").textContent = s.label;
+  el.querySelector("small").textContent = s.suffix || "";
+  el.querySelector(".nt").textContent = s.note || "";
+  statsEl.append(el);
+  const num = el.querySelector(".num");
+  if (s.value === null || s.value === undefined) return;
+  if (typeof s.value === "string") { num.textContent = s.value; return; }
+  const fmt = v => v.toLocaleString("en-IE", { minimumFractionDigits: s.decimals || 0, maximumFractionDigits: s.decimals || 0 });
+  if (reduce) { num.textContent = fmt(s.value); return; }
+  const start = performance.now() + 300 + i * 100, dur = 1400;
+  let finished = false;
+  const tick = () => {
+    if (finished) return;
+    const p = Math.min(1, Math.max(0, (performance.now() - start) / dur));
+    const eased = 1 - Math.pow(1 - p, 3);
+    num.textContent = fmt(s.value * eased);
+    if (p < 1) requestAnimationFrame(tick); else finished = true;
+  };
+  requestAnimationFrame(tick);
+  // If frames are paused (hidden tab, background iframe) still land on the real number.
+  setTimeout(() => { finished = true; num.textContent = fmt(s.value); }, 2400 + i * 100);
+});
+</script>
+</body>
+</html>

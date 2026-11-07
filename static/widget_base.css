@@ -1,0 +1,22 @@
+/* Shared base for every embedded widget (inlined into each template). */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+:root {
+  --green: #0B6E4F; --green-2: #12A67A; --green-soft: #E3F1EC; --teal: #145C5A; --navy: #1F4E79;
+  --orange: #C45C26; --amber: #E0A030; --red: #D64545; --ink: #1A2332; --muted: #5C6770;
+  --line: #E6E1D8; --paper: #F6F4F0; --card: #FFFFFF;
+  --shadow: 0 1px 2px rgba(26,35,50,.06), 0 8px 24px rgba(26,35,50,.08);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: transparent; }
+body { font-family: "Inter", "Segoe UI", system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; cursor: pointer; }
+.btn {
+  border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 12px;
+  padding: .5rem .9rem; font-weight: 600; font-size: .88rem;
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(11,110,79,.16); }
+.btn:active { transform: translateY(0); }
+.btn.primary { background: linear-gradient(135deg, var(--green), var(--teal)); color: #fff; border-color: transparent; }
+.btn:disabled { opacity: .45; cursor: default; transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

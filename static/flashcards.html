@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+/*__BASE_CSS__*/
+.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 14px; padding: 4px; }
+@media (max-width: 720px) { .wrap { grid-template-columns: 1fr; } .side { display: none; } }
+.deck { perspective: 1400px; height: 300px; position: relative; }
+.card {
+  position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.75,.2,1);
+  cursor: pointer; border-radius: 22px;
+}
+.card.flipped { transform: rotateY(180deg); }
+.card.out-left { animation: outL .35s ease forwards; } .card.in-right { animation: inR .4s ease; }
+@keyframes outL { to { transform: translateX(-40px) rotate(-4deg); opacity: 0; } }
+@keyframes inR { from { transform: translateX(40px) rotate(3deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.face {
+  position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 22px;
+  padding: 26px 28px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 14px 40px rgba(26,35,50,.14);
+}
+.front { background: #fff; border: 1px solid var(--line); }
+.front::before { content: "?"; position: absolute; right: 22px; bottom: -20px; font-size: 160px; font-weight: 800; color: #EEF2F6; line-height: 1; }
+.back { background: linear-gradient(150deg, #0B6E4F, #145C5A 60%, #1F4E79); color: #fff; transform: rotateY(180deg); }
+.kick { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; position: relative; }
+.back .kick { color: #9EF0C9; }
+.q { font-size: clamp(18px, 2.4vw, 23px); font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; position: relative; }
+.a { font-size: clamp(16px, 2vw, 19px); font-weight: 600; line-height: 1.45; }
+.tap { position: absolute; bottom: 16px; left: 28px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.back .tap { color: #CBE7DC; }
+.bar { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+.bar .spacer { flex: 1; }
+.btn.good { background: #DDF5EA; color: #0B6E4F; border-color: #A9DEC6; }
+.btn.again { background: #FFF1E8; color: #9A3412; border-color: #F5C9AE; }
+.side { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; }
+.side h4 { margin: 0; font-size: 14px; }
+.meter { height: 10px; border-radius: 99px; background: #ECE8E1; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #12A67A, #0B6E4F); transition: width .5s ease; }
+.score { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; }
+.score .g { color: var(--green); } .score .r { color: #9A3412; }
+.dots { display: flex; flex-wrap: wrap; gap: 5px; }
+.dots i { width: 12px; height: 12px; border-radius: 4px; background: #ECE8E1; transition: background .3s ease, transform .3s ease; cursor: pointer; }
+.dots i.cur { transform: scale(1.3); box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--navy); }
+.dots i.good { background: #12A67A; } .dots i.again { background: #E8946A; }
+.small { font-size: 12px; color: var(--muted); line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <div class="deck">
+      <div class="card" id="card" tabindex="0" role="button" aria-label="Flip card">
+        <div class="face front"><div class="kick" id="count"></div><div class="q" id="q"></div><div class="tap">Click or press Space to reveal ↻</div></div>
+        <div class="face back"><div class="kick">Answer</div><div class="a" id="a"></div><div class="tap">Did you get it?</div></div>
+      </div>
+    </div>
+    <div class="bar">
+      <button class="btn" id="prev">← Prev</button>
+      <button class="btn primary" id="flip">Flip</button>
+      <button class="btn" id="next">Next →</button>
+      <span class="spacer"></span>
+      <button class="btn again" id="again">Review again</button>
+      <button class="btn good" id="good">Got it ✓</button>
+      <button class="btn" id="shuffle" title="Shuffle">⤮ Shuffle</button>
+    </div>
+  </div>
+  <div class="side">
+    <h4>Your score</h4>
+    <div class="meter"><i id="meter"></i></div>
+    <div class="score"><span class="g" id="gcount">0 got it</span><span class="r" id="rcount">0 to review</span></div>
+    <div class="dots" id="dots"></div>
+    <div class="small">Questions from the Wilton Test Pack. The tester may ask any rules-of-the-road question, so read the official Rules of the Road too.</div>
+  </div>
+</div>
+<script>
+const DATA = __DATA__;
+const $ = id => document.getElementById(id);
+let order = DATA.cards.map((_, i) => i);
+let pos = 0;
+const marks = {};   // card index -> "good" | "again"
+
+const dots = order.map(i => {
+  const d = document.createElement("i");
+  d.title = "Question " + (i + 1);
+  d.addEventListener("click", () => go(order.indexOf(i)));
+  $("dots").append(d);
+  return d;
+});
+
+function show(anim) {
+  const card = $("card");
+  const c = DATA.cards[order[pos]];
+  const apply = () => {
+    card.classList.remove("flipped", "out-left");
+    $("q").textContent = c.q; $("a").textContent = c.a;
+    $("count").textContent = `Question ${pos + 1} of ${order.length}`;
+    if (anim) { card.classList.add("in-right"); setTimeout(() => card.classList.remove("in-right"), 420); }
+  };
+  if (anim) { card.classList.add("out-left"); setTimeout(apply, card.classList.contains("flipped") ? 360 : 300); } else apply();
+  refresh();
+}
+function refresh() {
+  const vals = Object.values(marks);
+  const g = vals.filter(v => v === "good").length, r = vals.filter(v => v === "again").length;
+  $("gcount").textContent = `${g} got it`; $("rcount").textContent = `${r} to review`;
+  $("meter").style.width = (100 * g / DATA.cards.length) + "%";
+  dots.forEach((d, i) => { d.className = (marks[i] || "") + (order[pos] === i ? " cur" : ""); });
+}
+const go = p => { pos = (p + order.length) % order.length; show(true); };
+const flip = () => $("card").classList.toggle("flipped");
+const mark = m => { marks[order[pos]] = m; refresh(); setTimeout(() => go(pos + 1), 250); };
+
+$("card").addEventListener("click", flip);
+$("flip").addEventListener("click", flip);
+$("next").addEventListener("click", () => go(pos + 1));
+$("prev").addEventListener("click", () => go(pos - 1));
+$("good").addEventListener("click", () => mark("good"));
+$("again").addEventListener("click", () => mark("again"));
+$("shuffle").addEventListener("click", () => {
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  pos = 0; show(true);
+});
+document.addEventListener("keydown", e => {
+  if (e.key === " ") { e.preventDefault(); flip(); }
+  if (e.key === "ArrowRight") go(pos + 1);
+  if (e.key === "ArrowLeft") go(pos - 1);
+});
+show(false);
+</script>
+</body>
+</html>

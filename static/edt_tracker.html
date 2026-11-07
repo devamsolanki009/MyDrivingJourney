@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+/*__BASE_CSS__*/
+.wrap { display: grid; grid-template-columns: 250px 1fr; gap: 18px; padding: 4px; }
+@media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+.panel {
+  background: linear-gradient(160deg, #0E3B33, #145C5A 55%, #1F4E79); color: #fff; border-radius: 20px; padding: 22px 18px;
+  display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.panel::after { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 50%; background: #2EC4B6; filter: blur(60px); opacity: .25; bottom: -90px; right: -70px; }
+.ring { position: relative; width: 160px; height: 160px; }
+.ring svg { transform: rotate(-90deg); }
+.ring .track { stroke: rgba(255,255,255,.15); }
+.ring .bar { stroke: url(#grad); stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1); }
+.ring .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring .pct { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+.ring .of { font-size: 12px; color: #CBE7DC; font-weight: 600; }
+.panel h3 { margin: 14px 0 4px; font-size: 17px; }
+.panel p { margin: 0 0 14px; font-size: 13px; color: #CBE7DC; line-height: 1.45; min-height: 38px; }
+.panel .btn { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.25); position: relative; z-index: 1; }
+.badge { margin-top: 10px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(124,240,192,.18); color: #9EF0C9; opacity: 0; transform: scale(.8); transition: all .4s ease; }
+.badge.show { opacity: 1; transform: scale(1); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.lesson {
+  position: relative; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px 12px 12px 54px;
+  min-height: 92px; padding-bottom: 22px; box-shadow: var(--shadow); cursor: pointer; text-align: left; user-select: none;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .3s ease;
+  opacity: 0; transform: translateY(12px); animation: in .5s ease forwards;
+}
+@keyframes in { to { opacity: 1; transform: none; } }
+.lesson:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(11,110,79,.14); border-color: #bfdccf; }
+.lesson:focus-visible { outline: 3px solid var(--green-2); outline-offset: 2px; }
+.lesson .n {
+  position: absolute; left: 12px; top: 12px; width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; background: var(--green-soft); color: var(--green); transition: all .3s ease;
+}
+.lesson h4 { margin: 0 0 4px; padding-right: 22px; font-size: 14px; line-height: 1.25; }
+.lesson p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+.lesson .check { position: absolute; right: 10px; top: 10px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; transition: all .3s ease; }
+.lesson .check svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 3; fill: none; stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset .35s .1s ease; }
+.lesson.done { background: linear-gradient(160deg, #F2FBF7, #fff); border-color: #9AD9BF; }
+.lesson.done .n { background: linear-gradient(135deg, var(--green), var(--teal)); color: #fff; }
+.lesson.done .check { background: var(--green-2); border-color: var(--green-2); }
+.lesson.done .check svg { stroke-dashoffset: 0; }
+.lesson.next { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(224,160,48,.18), var(--shadow); }
+.lesson.next::after { content: "Up next"; position: absolute; right: 10px; bottom: 8px; font-size: 10px; font-weight: 800; color: #9A6A12; background: #FFF3D6; border-radius: 999px; padding: 2px 7px; }
+@media (prefers-reduced-motion: reduce) { .lesson { opacity: 1 !important; transform: none !important; } }
+.hint { font-size: 12px; color: var(--muted); margin: 8px 2px 0; }
+.confetti { position: fixed; top: -10px; width: 8px; height: 14px; border-radius: 2px; animation: fall linear forwards; pointer-events: none; z-index: 10; }
+@keyframes fall { to { transform: translateY(600px) rotate(720deg); opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+    <div class="ring">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7CF0C0"/><stop offset="1" stop-color="#F4D58D"/></linearGradient></defs>
+        <circle class="track" cx="80" cy="80" r="66" fill="none" stroke-width="14"/>
+        <circle class="bar" id="bar" cx="80" cy="80" r="66" fill="none" stroke-width="14"/>
+      </svg>
+      <div class="center"><div class="pct" id="pct">0%</div><div class="of" id="of">0 of 12 lessons</div></div>
+    </div>
+    <h3>Your EDT progress</h3>
+    <p id="msg">Tap a lesson when your ADI signs it off in your logbook.</p>
+    <button class="btn" id="reset">Reset progress</button>
+    <div class="badge" id="badge">Ready to book your test</div>
+  </div>
+  <div>
+    <div class="grid" id="grid"></div>
+    <div class="hint">Saved in this browser only. Your official record is your logbook and My EDT on rsa.ie.</div>
+  </div>
+</div>
+<script>
+const DATA = __DATA__;
+const KEY = "edt-progress-v1";
+const total = DATA.lessons.length;
+let done = new Set();
+try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) { /* storage blocked: keep in memory */ }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
+
+const C = 2 * Math.PI * 66;
+const bar = document.getElementById("bar");
+bar.style.strokeDasharray = C; bar.style.strokeDashoffset = C;
+
+const grid = document.getElementById("grid");
+const cards = DATA.lessons.map((l, i) => {
+  const el = document.createElement("div");
+  el.className = "lesson"; el.tabIndex = 0; el.setAttribute("role", "checkbox");
+  el.style.animationDelay = (i * 0.04) + "s";
+  el.innerHTML = `<div class="n">${l.n}</div><div class="check"><svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3"/></svg></div><h4></h4><p></p>`;
+  el.querySelector("h4").textContent = l.title;
+  el.querySelector("p").textContent = l.focus;
+  const toggle = () => { done.has(l.n) ? done.delete(l.n) : done.add(l.n); save(); update(true); };
+  el.addEventListener("click", toggle);
+  el.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } });
+  grid.append(el);
+  return el;
+});
+
+const messages = [
+  [0, "Tap a lesson when your ADI signs it off in your logbook."],
+  [1, "Great start. Practise with your sponsor between lessons."],
+  [4, "Lessons 1–4 cover the basics. Keep practising the controls."],
+  [8, "Past halfway. Ask your ADI to drive the Wilton routes with you."],
+  [11, "Nearly there. One more lesson to go."],
+  [12, "All 12 done. Check My EDT shows every lesson before you book."],
+];
+let lastCount = done.size;
+function update(animate) {
+  const n = done.size;
+  bar.style.strokeDashoffset = C * (1 - n / total);
+  document.getElementById("pct").textContent = Math.round(100 * n / total) + "%";
+  document.getElementById("of").textContent = `${n} of ${total} lessons`;
+  document.getElementById("msg").textContent = messages.filter(m => n >= m[0]).pop()[1];
+  document.getElementById("badge").classList.toggle("show", n === total);
+  const nextN = DATA.lessons.map(l => l.n).find(x => !done.has(x));
+  cards.forEach((el, i) => {
+    const num = DATA.lessons[i].n;
+    el.classList.toggle("done", done.has(num));
+    el.classList.toggle("next", num === nextN);
+    el.setAttribute("aria-checked", done.has(num));
+  });
+  if (animate && n === total && lastCount < total) confetti();
+  lastCount = n;
+}
+function confetti() {
+  const colors = ["#0B6E4F", "#12A67A", "#F4D58D", "#1F4E79", "#C45C26", "#7CF0C0"];
+  for (let i = 0; i < 70; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + "s";
+    c.style.animationDelay = (Math.random() * 0.4) + "s";
+    document.body.append(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+document.getElementById("reset").addEventListener("click", () => { done.clear(); save(); update(true); });
+requestAnimationFrame(() => setTimeout(() => update(false), 120));
+</script>
+</body>
+</html>
